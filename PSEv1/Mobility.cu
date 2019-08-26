@@ -83,11 +83,6 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 extern __shared__ Scalar partial_sum[];
 extern __shared__ Scalar4 shared_Fpos[];
 
-//! Texture for reading table values
-scalar4_tex_t tables1_tex;
-//! Texture for reading particle positions
-scalar4_tex_t pos_tex;
-
 //! Spread particle quantities to the grid ( ALL PARTICLES SAME SIZE ) -- give one block per particle
 /*! \param d_pos            positions of the particles, actually they are fetched on texture memory
     \param d_net_force      net forces on the particles
@@ -114,9 +109,9 @@ scalar4_tex_t pos_tex;
 __global__ void gpu_stokes_Spread_kernel( 	
 				Scalar4 *d_pos,
 			    	Scalar4 *d_net_force,
-			    	CUFFTCOMPLEX *gridX,
-			    	CUFFTCOMPLEX *gridY,
-			    	CUFFTCOMPLEX *gridZ,
+			    	cufftComplex *gridX,
+			    	cufftComplex *gridY,
+			    	cufftComplex *gridZ,
 			    	int group_size,
 			    	int Nx,
 			    	int Ny,
@@ -149,7 +144,7 @@ __global__ void gpu_stokes_Spread_kernel(
 	
 	// Initialize shared memory and get particle position
 	if ( thread_offset == 0 ){
-		Scalar4 tpos = texFetchScalar4(d_pos, pos_tex, idx);
+		Scalar4 tpos = __ldg(d_pos + idx);
 		pos_shared[0].x = tpos.x; 
 		pos_shared[0].y = tpos.y; 
 		pos_shared[0].z = tpos.z;
@@ -262,9 +257,9 @@ __global__ void gpu_stokes_Spread_kernel(
     \param NxNyNz           total number of grid nodes
 */
 __global__ void gpu_stokes_Green_kernel(
-				CUFFTCOMPLEX *gridX, 
-				CUFFTCOMPLEX *gridY, 
-				CUFFTCOMPLEX *gridZ, 
+				cufftComplex *gridX, 
+				cufftComplex *gridY, 
+				cufftComplex *gridZ, 
 				Scalar4 *gridk, 
 				unsigned int NxNyNz
 				) {
@@ -274,9 +269,9 @@ __global__ void gpu_stokes_Green_kernel(
 	if ( tid < NxNyNz ) {
 	
 	  // Read the FFT force from global memory
-	  Scalar2 fX = gridX[tid];  
-	  Scalar2 fY = gridY[tid];
-	  Scalar2 fZ = gridZ[tid];
+	  cufftComplex fX = gridX[tid];  
+	  cufftComplex fY = gridY[tid];
+	  cufftComplex fZ = gridZ[tid];
 	
 	  // Current wave-space vector 
 	  Scalar4 tk = gridk[tid];
@@ -290,9 +285,9 @@ __global__ void gpu_stokes_Green_kernel(
 	  Scalar B = (tid==0) ? 0.0 : tk.w * ( sinf( k ) / k ) * ( sinf( k ) / k );
 	
 	  // Write the velocity to global memory
-	  gridX[tid] = make_scalar2( ( fX.x - tk.x * kdF.x ) * B, ( fX.y - tk.x * kdF.y ) * B );
-	  gridY[tid] = make_scalar2( ( fY.x - tk.y * kdF.x ) * B, ( fY.y - tk.y * kdF.y ) * B );
-	  gridZ[tid] = make_scalar2( ( fZ.x - tk.z * kdF.x ) * B, ( fZ.y - tk.z * kdF.y ) * B );
+	  gridX[tid] = make_cuComplex( ( fX.x - tk.x * kdF.x ) * B, ( fX.y - tk.x * kdF.y ) * B );
+	  gridY[tid] = make_cuComplex( ( fY.x - tk.y * kdF.x ) * B, ( fY.y - tk.y * kdF.y ) * B );
+	  gridZ[tid] = make_cuComplex( ( fZ.x - tk.z * kdF.x ) * B, ( fZ.y - tk.z * kdF.y ) * B );
 	
 	
 	}
@@ -325,9 +320,9 @@ __global__ void gpu_stokes_Green_kernel(
 __global__ void gpu_stokes_Contract_kernel( 	
 					Scalar4 *d_pos,
 				 	Scalar4 *d_vel,
-				 	CUFFTCOMPLEX *gridX,
-				 	CUFFTCOMPLEX *gridY,
-				 	CUFFTCOMPLEX *gridZ,
+				 	cufftComplex *gridX,
+				 	cufftComplex *gridY,
+				 	cufftComplex *gridZ,
 				 	int group_size,
 				 	int Nx,
 				 	int Ny,
@@ -364,7 +359,7 @@ __global__ void gpu_stokes_Contract_kernel(
 	// Initialize shared memory and get particle position
 	velocity[thread_offset] = make_scalar3(0.0,0.0,0.0);
 	if ( thread_offset == 0 ){
-		Scalar4 tpos = texFetchScalar4(d_pos, pos_tex, idx);
+		Scalar4 tpos = __ldg(d_pos + idx);
 		pos_shared[0] = make_scalar3( tpos.x, tpos.y, tpos.z ); 
 	}
 	__syncthreads();
@@ -522,9 +517,9 @@ void gpu_stokes_Mwave_wrap(
 				Scalar xi,
 				Scalar eta,
 				Scalar4 *d_gridk,
-				CUFFTCOMPLEX *d_gridX,
-				CUFFTCOMPLEX *d_gridY,
-				CUFFTCOMPLEX *d_gridZ,
+				cufftComplex *d_gridX,
+				cufftComplex *d_gridY,
+				cufftComplex *d_gridZ,
 				cufftHandle plan,
 				const int Nx,
 				const int Ny,
@@ -625,7 +620,7 @@ __global__ void gpu_stokes_Mreal_kernel(
 		unsigned int head_idx = d_headlist[idx];
 		
 		// Particle position and table ID
-		Scalar4 posi = texFetchScalar4(d_pos, pos_tex, idx);
+		Scalar4 posi = __ldg(d_pos + idx);
 		
 		// Self contribution
 		Scalar4 F = d_net_force[idx];
@@ -641,7 +636,7 @@ __global__ void gpu_stokes_Mreal_kernel(
 			unsigned int cur_j = d_nlist[ head_idx + neigh_idx ];	
 	
 			// Position and size of neighbor particle
-			Scalar4 posj = texFetchScalar4(d_pos, pos_tex, cur_j);
+			Scalar4 posj = __ldg(d_pos + cur_j);
 		
 			// Distance vector between current particle and neighbor
 			Scalar3 r = make_scalar3( posi.x - posj.x, posi.y - posj.y, posi.z - posj.z );
@@ -661,7 +656,7 @@ __global__ void gpu_stokes_Mreal_kernel(
 				int r_ind = __scalar2int_rd( ewald_n * ( dist - ewald_dr ) / ( ewald_cut - ewald_dr ) );
 				int offset = r_ind;
 		
-				Scalar4 tewaldC1 = texFetchScalar4(d_ewaldC1, tables1_tex, offset);
+				Scalar4 tewaldC1 = __ldg(d_ewaldC1 + offset);
 		
 				// Linear interpolation of table
 				Scalar fac = dist / ewald_dr - r_ind - Scalar(1.0);
@@ -741,9 +736,9 @@ void gpu_stokes_Mobility_wrap(
 				Scalar4 *d_ewaldC1, 
 				Scalar self,
 				Scalar4 *d_gridk,
-				CUFFTCOMPLEX *d_gridX,
-				CUFFTCOMPLEX *d_gridY,
-				CUFFTCOMPLEX *d_gridZ,
+				cufftComplex *d_gridX,
+				cufftComplex *d_gridY,
+				cufftComplex *d_gridZ,
 				cufftHandle plan,
 				const int Nx,
 				const int Ny,

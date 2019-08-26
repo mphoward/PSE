@@ -62,13 +62,6 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef __MOBILITYSAMESIZE_CUH__
 #define __MOBILITYSAMESIZE_CUH__
 
-//! Definition for comxplex variable storage
-#ifdef SINGLE_PRECISION
-#define CUFFTCOMPLEX cufftComplex
-#else
-#define CUFFTCOMPLEX cufftComplex
-#endif
-
 
 void gpu_stokes_Mobility_wrap( Scalar4 *d_pos,
                                	Scalar4 *d_vel,
@@ -84,9 +77,9 @@ void gpu_stokes_Mobility_wrap( Scalar4 *d_pos,
 			       	Scalar4 *d_ewaldC1, 
 			       	Scalar self, 
 			       	Scalar4 *d_gridk,
-			       	CUFFTCOMPLEX *d_gridX,
-			       	CUFFTCOMPLEX *d_gridY,
-			       	CUFFTCOMPLEX *d_gridZ,
+			       	cufftComplex *d_gridX,
+			       	cufftComplex *d_gridY,
+			       	cufftComplex *d_gridZ,
 			       	cufftHandle plan,
 			       	const int Nx,
 			       	const int Ny,
@@ -121,9 +114,9 @@ void gpu_stokes_Mreal_kernel( 	Scalar4 *d_pos,
 
 __global__ void gpu_stokes_Spread_kernel( 	Scalar4 *d_pos,
 				    		Scalar4 *d_net_force,
-				    		CUFFTCOMPLEX *gridX,
-				    		CUFFTCOMPLEX *gridY,
-				    		CUFFTCOMPLEX *gridZ,
+				    		cufftComplex *gridX,
+				    		cufftComplex *gridY,
+				    		cufftComplex *gridZ,
 				    		int group_size,
 				    		int Nx,
 				    		int Ny,
@@ -137,13 +130,13 @@ __global__ void gpu_stokes_Spread_kernel( 	Scalar4 *d_pos,
 						Scalar prefac,
 						Scalar expfac );
 
-__global__ void gpu_stokes_Green_kernel(CUFFTCOMPLEX *gridX, CUFFTCOMPLEX *gridY, CUFFTCOMPLEX *gridZ, Scalar4 *gridk, unsigned int NxNyNz);
+__global__ void gpu_stokes_Green_kernel(cufftComplex *gridX, cufftComplex *gridY, cufftComplex *gridZ, Scalar4 *gridk, unsigned int NxNyNz);
 
 __global__ void gpu_stokes_Contract_kernel( 	Scalar4 *d_pos,
 				 		Scalar4 *d_vel,
-				 		CUFFTCOMPLEX *gridX,
-				 		CUFFTCOMPLEX *gridY,
-				 		CUFFTCOMPLEX *gridZ,
+				 		cufftComplex *gridX,
+				 		cufftComplex *gridY,
+				 		cufftComplex *gridZ,
 				 		int group_size,
 				 		int Nx,
 				 		int Ny,

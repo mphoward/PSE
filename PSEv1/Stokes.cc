@@ -259,11 +259,11 @@ void Stokes::setParams()
 	// Prepare GPUArrays for grid vectors and gridded forces
 	GPUArray<Scalar4> n_gridk(m_Nx*m_Ny*m_Nz, m_exec_conf);
 	m_gridk.swap(n_gridk);
-	GPUArray<CUFFTCOMPLEX> n_gridX(m_Nx*m_Ny*m_Nz, m_exec_conf);
+	GPUArray<cufftComplex> n_gridX(m_Nx*m_Ny*m_Nz, m_exec_conf);
 	m_gridX.swap(n_gridX);
-	GPUArray<CUFFTCOMPLEX> n_gridY(m_Nx*m_Ny*m_Nz, m_exec_conf);
+	GPUArray<cufftComplex> n_gridY(m_Nx*m_Ny*m_Nz, m_exec_conf);
 	m_gridY.swap(n_gridY);
-	GPUArray<CUFFTCOMPLEX> n_gridZ(m_Nx*m_Ny*m_Nz, m_exec_conf);
+	GPUArray<cufftComplex> n_gridZ(m_Nx*m_Ny*m_Nz, m_exec_conf);
 	m_gridZ.swap(n_gridZ);
 
 	// Get list of reciprocal space vectors, and scaling factor for the wave space calculation at each grid point
@@ -444,7 +444,7 @@ void Stokes::integrateStepOne(unsigned int timestep)
 		return;
 
 	// Get particle forces
-	const GPUArray< Scalar4 >& net_force = m_pdata->getNetForce();
+	const GlobalArray< Scalar4 >& net_force = m_pdata->getNetForce();
 
 	// profile this step
 	if (m_prof)
@@ -462,9 +462,9 @@ void Stokes::integrateStepOne(unsigned int timestep)
 
 	// Grid vectors
 	ArrayHandle<Scalar4> d_gridk(m_gridk, access_location::device, access_mode::readwrite);
-	ArrayHandle<CUFFTCOMPLEX> d_gridX(m_gridX, access_location::device, access_mode::readwrite);
-	ArrayHandle<CUFFTCOMPLEX> d_gridY(m_gridY, access_location::device, access_mode::readwrite);
-	ArrayHandle<CUFFTCOMPLEX> d_gridZ(m_gridZ, access_location::device, access_mode::readwrite);
+	ArrayHandle<cufftComplex> d_gridX(m_gridX, access_location::device, access_mode::readwrite);
+	ArrayHandle<cufftComplex> d_gridY(m_gridY, access_location::device, access_mode::readwrite);
+	ArrayHandle<cufftComplex> d_gridZ(m_gridZ, access_location::device, access_mode::readwrite);
 
 	// Real space interaction tabulation
 	ArrayHandle<Scalar4> d_ewaldC1(m_ewaldC1, access_location::device, access_mode::read);

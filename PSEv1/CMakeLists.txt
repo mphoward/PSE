@@ -30,22 +30,11 @@ set_target_properties(_${COMPONENT_NAME} PROPERTIES INSTALL_RPATH "\$ORIGIN/..;\
 endif()
 
 # Find additional libraries to be linked for the plugin
-find_library( LAPACKE_LIBRARIES lapacke PATHS /usr/local/lapack-3.6.0/lib/ )
-find_library( LAPACK_LIBRARIES lapack PATHS /usr/local/lapack-3.6.0/lib/ )
-find_library( BLAS_LIBRARIES blas PATHS /usr/local/lapack-3.6.0/lib/ )
-find_library( CBLAS_LIBRARIES cblas PATHS /usr/local/lapack-3.6.0/lib/ )
-if( LAPACKE_LIBRARIES-NOTFOUND )
-        message(FATAL_ERROR "lapacke libraries not found")
-endif( LAPACKE_LIBRARIES-NOTFOUND )
-message(STATUS  "found lapacke libraries: ${LAPACKE_LIBRARIES}")
-if( LAPACK_LIBRARIES-NOTFOUND )
-        message(FATAL_ERROR "lapack libraries not found")
-endif( LAPACK_LIBRARIES-NOTFOUND )
-message(STATUS  "found lapack libraries: ${LAPACK_LIBRARIES}")
-set( LAPACK_LIBRARIES ${LAPACKE_LIBRARIES} ${LAPACK_LIBRARIES} ${CBLAS_LIBRARIES}  ${BLAS_LIBRARIES} )
+find_package(MKL REQUIRED)
 
 # link the library to its dependencies
-target_link_libraries(_${COMPONENT_NAME} PRIVATE ${HOOMD_LIBRARIES} ${LAPACK_LIBRARIES})
+target_link_libraries(_${COMPONENT_NAME} PRIVATE ${HOOMD_LIBRARIES} ${MKL_LIBRARIES})
+target_include_directories(_${COMPONENT_NAME} SYSTEM PRIVATE ${MKL_INCLUDE_DIRS})
 
 # if we are compiling with MPI support built in, set appropriate
 # compiler/linker flags
@@ -94,7 +83,3 @@ foreach(file ${files})
 endforeach()
 
 add_custom_target(copy_${COMPONENT_NAME} ALL DEPENDS ${files})
-
-if (BUILD_TESTING)
-    add_subdirectory(test-py)
-endif()

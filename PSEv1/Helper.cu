@@ -85,13 +85,13 @@ extern __shared__ Scalar partial_sum[];
    	\param NxNyNz dimension of the grid
 */
 __global__
-void gpu_stokes_ZeroGrid_kernel(CUFFTCOMPLEX *grid, unsigned int NxNyNz) {
+void gpu_stokes_ZeroGrid_kernel(cufftComplex *grid, unsigned int NxNyNz) {
 
 	unsigned int tid = blockDim.x * blockIdx.x + threadIdx.x;
 	
 	if ( tid < NxNyNz ) {
 	
-		grid[tid] = make_scalar2( 0.0, 0.0 );  
+		grid[tid] = make_cuComplex( 0.0, 0.0 );  
 	
 	}
 }

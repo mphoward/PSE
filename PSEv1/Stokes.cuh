@@ -63,14 +63,6 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef __STOKES_CUH__
 #define __STOKES_CUH__
 
-//! Definition for comxplex variable storage
-#ifdef SINGLE_PRECISION
-#define CUFFTCOMPLEX cufftComplex
-#else
-#define CUFFTCOMPLEX cufftComplex
-#endif
-
-
 //! Kernel driver for the first part (no second part) of the Stokes update called by Stokes.cc
 cudaError_t gpu_stokes_step_one(Scalar4 *d_pos,
                              Scalar4 *d_vel,
@@ -93,9 +85,9 @@ cudaError_t gpu_stokes_step_one(Scalar4 *d_pos,
 			     Scalar4 *d_ewald1,
 			     Scalar self,
 			     Scalar4 *d_gridk,
-			     CUFFTCOMPLEX *d_gridX,
-			     CUFFTCOMPLEX *d_gridY,
-			     CUFFTCOMPLEX *d_gridZ,
+			     cufftComplex *d_gridX,
+			     cufftComplex *d_gridY,
+			     cufftComplex *d_gridZ,
 			     cufftHandle plan,
 			     const int Nx,
 			     const int Ny,

@@ -107,11 +107,6 @@ inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort=t
 extern __shared__ Scalar partial_sum[];
 extern __shared__ Scalar4 shared_Fpos[];
 
-//! Texture for reading table values
-scalar4_tex_t tables1_tex;
-//! Texture for reading particle positions
-scalar4_tex_t pos_tex;
-
 //! Takes the integration on a group of particles
 /*! \param d_pos            array of particle positions
     \param d_vel            array of particle velocities
@@ -253,9 +248,9 @@ cudaError_t gpu_stokes_step_one(
 				Scalar4 *d_ewaldC1, 
 				Scalar self,
 				Scalar4 *d_gridk,
-				CUFFTCOMPLEX *d_gridX,
-				CUFFTCOMPLEX *d_gridY,
-				CUFFTCOMPLEX *d_gridZ,
+				cufftComplex *d_gridX,
+				cufftComplex *d_gridY,
+				cufftComplex *d_gridZ,
 				cufftHandle plan,
 				const int Nx,
 				const int Ny,
@@ -283,17 +278,6 @@ cudaError_t gpu_stokes_step_one(
 	int gridBlockSize = ( NxNyNz > block_size ) ? block_size : NxNyNz;
 	int gridNBlock = ( NxNyNz + gridBlockSize - 1 ) / gridBlockSize ; 
 	
-	// Get the textured tables for real space Ewald sum tabulation
-	tables1_tex.normalized = false; // Not normalized
-	tables1_tex.filterMode = cudaFilterModeLinear; // Filter mode: floor of the index
-	// One dimension, Read mode: ElementType(Get what we write)
-	cudaBindTexture(0, tables1_tex, d_ewaldC1, sizeof(Scalar4) * (ewald_n+1)); // This was a bug in former versions!
-	
-	// Same for the positions and forces
-	pos_tex.normalized = false; // Not normalized
-	pos_tex.filterMode = cudaFilterModePoint; // Filter mode: floor of the index
-	cudaBindTexture(0, pos_tex, d_pos, sizeof(Scalar4) * N_total);
-
 	// Get sheared grid vectors
     	gpu_stokes_SetGridk_kernel<<<gridNBlock,gridBlockSize>>>(d_gridk,Nx,Ny,Nz,NxNyNz,box,xi,eta);
 
@@ -357,9 +341,6 @@ cudaError_t gpu_stokes_step_one(
 	// Quick error check
 	gpuErrchk(cudaPeekAtLastError());
 	
-	// Cleanup
-	cudaUnbindTexture(tables1_tex);
-	cudaUnbindTexture(pos_tex);
 	
 	return cudaSuccess;
 }

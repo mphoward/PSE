@@ -61,8 +61,8 @@ using namespace hoomd;
 #include <stdio.h>
 #include <math.h>
 
-#include "lapacke.h"
-#include "cblas.h"
+#include <mkl_lapacke.h>
+#include <mkl_cblas.h>
 
 #ifdef WIN32
 #include <cassert>
@@ -151,9 +151,9 @@ __global__ void gpu_stokes_BrownianGenerate_kernel(
 
 */
 __global__ void gpu_stokes_BrownianGridGenerate_kernel(  
-						CUFFTCOMPLEX *gridX,
-						CUFFTCOMPLEX *gridY,
-						CUFFTCOMPLEX *gridZ,
+						cufftComplex *gridX,
+						cufftComplex *gridY,
+						cufftComplex *gridZ,
 						Scalar4 *gridk,
 				        	unsigned int NxNyNz,
 						int Nx,
@@ -788,9 +788,9 @@ void gpu_stokes_CombinedMobilityBrownian_wrap(
 			        int ewald_n,
 			        Scalar4 *d_ewaldC1, 
 			        Scalar4 *d_gridk,
-			        CUFFTCOMPLEX *d_gridX,
-			        CUFFTCOMPLEX *d_gridY,
-			        CUFFTCOMPLEX *d_gridZ,
+			        cufftComplex *d_gridX,
+			        cufftComplex *d_gridY,
+			        cufftComplex *d_gridZ,
 			        cufftHandle plan,
 			        const int Nx,
 			        const int Ny,

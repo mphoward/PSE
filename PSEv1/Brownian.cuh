@@ -63,13 +63,6 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef __BROWNIAN_CUH__
 #define __BROWNIAN_CUH__
 
-//! Definition for complex variable storage
-#ifdef SINGLE_PRECISION
-#define CUFFTCOMPLEX cufftComplex
-#else
-#define CUFFTCOMPLEX cufftComplex
-#endif
-
 __global__ void gpu_stokes_BrownianGenerate_kernel(
 				Scalar4 *d_psi,
 				unsigned int group_size,
@@ -79,9 +72,9 @@ __global__ void gpu_stokes_BrownianGenerate_kernel(
 				);
 
 __global__ void gpu_stokes_BrownianGridGenerate_kernel(  
-					CUFFTCOMPLEX *gridX,
-					CUFFTCOMPLEX *gridY,
-					CUFFTCOMPLEX *gridZ,
+					cufftComplex *gridX,
+					cufftComplex *gridY,
+					cufftComplex *gridZ,
 					Scalar4 *gridk,
 				        unsigned int NxNyNz,
 					int Nx,
@@ -113,9 +106,9 @@ void gpu_stokes_CombinedMobilityBrownian_wrap(
 			        int ewald_n,
 			        Scalar4 *d_ewaldC1, 
 			        Scalar4 *d_gridk,
-			        CUFFTCOMPLEX *d_gridX,
-			        CUFFTCOMPLEX *d_gridY,
-			        CUFFTCOMPLEX *d_gridZ,
+			        cufftComplex *d_gridX,
+			        cufftComplex *d_gridY,
+			        cufftComplex *d_gridZ,
 			        cufftHandle plan,
 			        const int Nx,
 			        const int Ny,

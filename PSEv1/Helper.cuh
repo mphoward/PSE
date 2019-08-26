@@ -63,14 +63,7 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef __HELPER_CUH__
 #define __HELPER_CUH__
 
-//! Definition for comxplex variable storage
-#ifdef SINGLE_PRECISION
-#define CUFFTCOMPLEX cufftComplex
-#else
-#define CUFFTCOMPLEX cufftComplex
-#endif
-
-__global__ void gpu_stokes_ZeroGrid_kernel(CUFFTCOMPLEX *grid, unsigned int NxNyNz);
+__global__ void gpu_stokes_ZeroGrid_kernel(cufftComplex *grid, unsigned int NxNyNz);
 
 __global__ void gpu_stokes_LinearCombination_kernel(Scalar4 *d_a, Scalar4 *d_b, Scalar4 *d_c, Scalar coeff_a, Scalar coeff_b, unsigned int group_size, unsigned int *d_group_members);
 
