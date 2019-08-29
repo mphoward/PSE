@@ -1,15 +1,11 @@
-# First, we need to import the C++ module. It has the same name as this module (plugin_template) but with an underscore
-# in front
-from hoomd.PSEv1 import _PSEv1
-from hoomd.PSEv1 import shear_function
+import math
 
-# Next, since we are extending an integrator, we need to bring in the base class integrator and some other parts from
-# hoomd_script
 import hoomd
 from hoomd import _hoomd
-from hoomd import compute
 from hoomd.md import _md
-import math
+
+from . import _PSEv1
+from . import shear_function
 
 ## One step overdamped integration with hydrodynamic interactions
 class PSEv1(hoomd.md.integrate._integration_method):
@@ -35,13 +31,13 @@ class PSEv1(hoomd.md.integrate._integration_method):
         hoomd.util.print_status_line();
         
         # initialize base class
-        hoomd.md.integrate._integration_method.__init__(self);
+        super(PSEv1, self).__init__()
         
         # setup the variant inputs
         T = hoomd.variant._setup_variant_input(T);
         
         # create the compute thermo
-        compute._get_unique_thermo(group=group);
+        hoomd.compute._get_unique_thermo(group=group);
         
         # Real space neighborlist cutoff based on error estimate for spectral sums
         self.rcut = math.sqrt( - math.log( error ) ) / xi;

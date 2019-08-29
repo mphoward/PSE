@@ -1,14 +1,10 @@
 ## \package PSEv1.variant
 # classes representing the variant class to facilitate box_resize
 
-from hoomd.PSEv1 import _PSEv1
-from hoomd.PSEv1 import shear_function
-
-from hoomd import variant
-
-from hoomd import _hoomd
 import hoomd
-import sys
+
+from . import _PSEv1
+from . import shear_function
 
 ## Variant class holding a functional form of shear field
 # Used as an argument for box_resize class to deform the box
@@ -21,7 +17,7 @@ class shear_variant(hoomd.variant._variant):
     def __init__(self, function_form, total_timestep, max_strain = 0.5):
 
         # initialize the base class
-        _variant.__init__(self)
+        super(shear_variant, self).__init__()
 
 	# check total_timestep is positive
         if total_timestep <= 0:

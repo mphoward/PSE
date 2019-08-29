@@ -2,9 +2,9 @@
 # classes representing shear functions, which can be input of an integrator and variant
 # to shear the box of a simulation
 
-from hoomd.PSEv1 import _PSEv1
-
 import hoomd
+
+from . import _PSEv1
 
 ## shear function interface representing shear flow field described by a function
 class _shear_function:
@@ -47,7 +47,7 @@ class steady(_shear_function):
     # \param shear_rate the shear rate of the shear, default is zero, should be zero or positive
     # \param zero the time offset
     def __init__(self, dt, shear_rate = 0, zero = 'now'):
-        _shear_function.__init__(self, zero)
+        super(steady, self).__init__(zero)
         self.cpp_function = _PSEv1.SteadyShearFunction(shear_rate, self._offset, dt)
 
 
@@ -67,7 +67,7 @@ class sine(_shear_function):
             hoomd.context.msg.error("Shear frequency must be positive (use steady class instead for steady shear)\n")
             raise RuntimeError("Error creating shear function")
 
-        _shear_function.__init__(self, zero)
+        super(sine, self).__init__(zero)
         self.cpp_function = _PSEv1.SinShearFunction(shear_rate, shear_freq, self._offset, dt)
 
 
@@ -81,7 +81,7 @@ class chirp(_shear_function):
     # \param periodT final time of chirp
     # \param zero the time offset
     def __init__(self, dt, amplitude, omega_0, omega_f, periodT, zero = 'now'):
-        _shear_function.__init__(self, zero)
+        super(chirp, self).__init__(zero)
         self.cpp_function = _PSEv1.ChirpShearFunction(amplitude, omega_0, omega_f, periodT, self._offset, dt)
 
 
@@ -98,7 +98,7 @@ class tukey_window(_shear_function):
             hoomd.context.msg.error("Tukey parameter must be within (0, 1]")
             raise RuntimeError("Error creating Tukey window function")
 
-        _shear_function.__init__(self, zero)
+        super(tukey_window, self).__init__(zero)
         self.cpp_function = _PSEv1.TukeyWindowFunction(periodT, tukey_param, self._offset, dt)
 
 
@@ -110,5 +110,5 @@ class windowed(_shear_function):
     # \param function_form the original shear function
     # \param window the window function. It is recommended to make sure the offset (zero) of the window function is the same with shear function
     def __init__(self, function_form, window):
-        _shear_function.__init__(self, 'now') # zero parameter is not used in windowed class anyways
+        super(windowed, self).__init__('now')
         self.cpp_function = _PSEv1.WindowedFunction(function_form.cpp_function, window.cpp_function)

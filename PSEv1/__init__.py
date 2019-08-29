@@ -1,5 +1,8 @@
-# this file exists to mark this directory as a python module
-# need to import all submodules defined in this directory
-from hoomd.PSEv1 import integrate
-from hoomd.PSEv1 import shear_function
-from hoomd.PSEv1 import variant
+
+# import these here to cover most common library dependencies
+from hoomd import _hoomd
+from hoomd.md import _md
+
+from . import integrate
+from . import shear_function
+from . import variant
